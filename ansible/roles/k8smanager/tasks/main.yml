@@ -1,0 +1,16 @@
+---
+#this playbook is for k8s etcd manager.
+
+- name: Template etcd manger scripts
+  template:
+    src: etcd_manager.sh.j2
+    dest: /var/lib/etcd/etcd_manager.sh
+    mode: "0755"
+  tags: etcd_manager
+
+- name: Cron etcd backup normally
+  cron:
+    name: "backup etcd db"
+    minute: "0"
+    hour: "13"
+    job: "/var/lib/etcd/etcd_manager.sh backup"

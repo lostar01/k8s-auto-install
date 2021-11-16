@@ -1,0 +1,36 @@
+---
+# Variables listed here are applicable to all host groups
+
+#common playbook variables
+time_server: ntp.aliyun.com
+
+
+#keepalived playbook variables
+vip_interface: ens33
+keepalived_vip: 192.168.147.139
+
+
+#hadproxy playbook variables
+health_check_url: http://127.0.0.1:1080/admin?stats
+health_flag: 401
+
+#k8s playbook variables
+k8s_version: 1.21.3
+#kubeadm kubelet kubectl[true|false]
+kubeadm_reset: true
+k8s_reinstall: false
+k8s_podSubnet: 10.244.0.0/16
+k8s_serviceSubnet: 10.96.0.0/12
+k8s_install_user: k8s
+k8s_control_plane_enpoint: 192.168.147.139
+
+k8s_cert_sans_ips:
+  - "192.168.147.130"
+  - "192.168.147.131"
+  - "192.168.147.132"
+  - "192.168.147.139"
+
+
+flanneld_yaml_url: https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+#kubeadm action [install,unstall]
+kubeadm_action: install

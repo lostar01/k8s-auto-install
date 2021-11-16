@@ -1,0 +1,40 @@
+#!/bin/bash
+export ETCDCTL_API=3
+ETCD_BACKUP_DIR=/opt/etcd_backup
+
+ETCD_CMD="etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/peer.crt --key=/etc/kubernetes/pki/etcd/peer.key --endpoints={{ansible_ens33.ipv4.address}}:2379"
+
+if [ ! -d $ETCD_BACKUP_DIR ];then
+  mkdir -p $ETCD_BACKUP_DIR
+fi
+function etcd_backup() {
+  $ETCD_CMD  snapshot save $ETCD_BACKUP_DIR/etcd-snapshot-$(date +%Y%m%d).db
+}
+
+function etcd_restore() {
+  ETCD_BACKUP_FILE=$1
+  ETCD_NAME=$2
+  
+  $ETCD_CMD snapshot restore  $ETCD_BACKUP_FILE --name=$ETCD_NAME  --initial-cluster $ETCD_NAME=https://{{ansible_ens33.ipv4.address}}:2380 --initial-advertise-peer-urls=https://{{ansible_ens33.ipv4.address}}:2380 --data-dir=/var/lib/etcd
+
+}
+
+case $1 in
+"backup")
+    etcd_backup
+    ;;
+"restore")
+    shift
+    if [ $# -ne 2 ];then
+        echo "$0 restore etcd_backup_file etcd_name"
+        exit 2
+    fi
+    etcd_restore $1 $2
+    ;;
+
+*)
+   echo """$0 [backup|restore]
+     backup
+     restore etcd_backup_file etcd_name
+     """
+esac

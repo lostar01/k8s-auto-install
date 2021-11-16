@@ -1,0 +1,11 @@
+---
+#
+
+- name: Install k8s dashboard
+  hosts: master
+  become: yes
+
+  roles:
+  - role: k8sapp
+  tags: k8s_dashboard
+

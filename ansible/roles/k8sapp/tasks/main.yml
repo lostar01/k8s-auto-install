@@ -1,0 +1,57 @@
+---
+#this playbook is for k8s app.
+
+- name: Generate dashboard key
+  script:
+    cmd: generate_key.sh /etc/kubernetes/pki dashboard
+  tags: generate_dashboard_key
+  when: role == "MASTER"
+
+- name: Install dashboard namespace
+  shell: kubectl create namespace kubernetes-dashboard || echo ""
+  tags: install_dashboard_namespace
+  when: role == "MASTER"
+
+- name: Install dashboard secret to k8s cluster
+  shell: kubectl create secret generic kubernetes-dashboard-certs --from-file=/etc/kubernetes/pki/dashboard.key --from-file=/etc/kubernetes/pki/dashboard.crt -n kubernetes-dashboard || echo ""
+  tags: install_dashboard_secret
+  when: role == "MASTER"
+
+- name: Template dashborad recommended yaml
+  template:
+    src: "dashboard/{{item}}"
+    dest: "/tmp/{{item}}"
+    mode: "0644"
+  tags: dashboard_install
+  when: role == "MASTER"
+  with_items:
+  - recommended.yaml
+  - dashboard-admin-bind-cluster-role.yaml
+  - dashboard-admin.yaml
+
+- name: Apply dashboard yml to k8s cluster
+  shell: kubectl apply -f /tmp/recommended.yaml
+  tags: dashboard_install
+  when: role == "MASTER"
+
+- name: Apply dashboard service account
+  shell: kubectl apply -f /tmp/dashboard-admin.yaml
+  tags: dashboard_auth
+  when: role == "MASTER"
+
+- name: Assign permissions to dashboard users
+  shell: kubectl apply -f /tmp/dashboard-admin-bind-cluster-role.yaml
+  tags: dashboard_role
+  when: role == "MASTER"
+
+- name: Get token from k8s cluster
+  shell: kubectl -n kubernetes-dashboard describe secret $(kubectl -n kubernetes-dashboard get secret | grep dashboard-admin | awk '{print $1}')
+  tags: get_dashboard_auth
+  register: dashboard_token
+  when: role == "MASTER"
+
+- name: Show dashboard token
+  debug:
+    msg: "{{dashboard_token.stdout_lines}}"
+  tags: get_dashboard_auth
+  when: role == "MASTER"

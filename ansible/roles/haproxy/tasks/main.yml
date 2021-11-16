@@ -1,0 +1,29 @@
+---
+#This playbook contains haproxy plays that will be run on haproxy nodes.
+
+- name: Install haproxy
+  yum: name=haproxy
+  tags: install_haproxy
+
+- name: Configure haproxy
+  template:
+    src: haproxy.conf.j2
+    dest: /etc/haproxy/haproxy.cfg 
+    mode: "0644"
+  tags: install_haproxy
+  notify:
+  - reload haproxy
+
+- name: Configure check haproxy script
+  template:
+    src: check_haproxy.sh.j2
+    dest: /etc/keepalived/check_haproxy.sh
+    mode: "0755"
+  tags: install_haproxy
+
+- name: Start haproxy service
+  service:
+    name: haproxy
+    state: started 
+    enabled: yes
+  tags: install_haproxy

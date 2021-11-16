@@ -1,0 +1,16 @@
+#!/bin/bash
+# check etcd cluster health
+
+ETCD_CHECK_CMD="""ETCDCTL_API=3 etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+                  --cert=/etc/kubernetes/pki/etcd/peer.crt \
+                  --key=/etc/kubernetes/pki/etcd/peer.key \
+                  --write-out=table \
+                  --endpoints=
+                  {% for node in groups['master'] %}
+                  {{node}}:2379,
+                  {%endfor%}
+              """
+
+function check_endpoint() {
+    ETCDCTL_API=3 etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/peer.crt --key=/etc/kubernetes/pki/etcd/peer.key --write-out=table --endpoints=192.168.200.3:2379,192.168.200.4:2379,192.168.200.5:2379 endpoint health
+}

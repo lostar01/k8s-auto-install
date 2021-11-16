@@ -1,0 +1,7 @@
+---
+#this handler for haproxy playbook
+
+- name: reload haproxy
+  service:
+    name: haproxy
+    state: reloaded

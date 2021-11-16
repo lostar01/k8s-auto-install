@@ -1,0 +1,25 @@
+[master]
+master1
+master2
+master3
+
+[node]
+node1
+node2
+node3
+
+[haproxy]
+master1
+master2
+master3
+
+[keepalived]
+master1 role=BACKUP  priority=98  master_name=master1
+master2 role=MASTER  priority=100 master_name=master2
+master3 role=BACKUP  priority=99  master_name=master3
+
+
+[k8s:children]
+master
+node
+

@@ -1,0 +1,7 @@
+---
+#This hander is for keepalived playbook
+
+- name: restart keepalived
+  service:
+    name: keepalived
+    state: restarted

@@ -1,0 +1,24 @@
+---
+#This playbook contains keepalived plays that will be run on keepalived nodes.
+
+- name: Install keepalived
+  yum:
+    name:
+    - keepalived
+  tags: install_keepalived
+
+- name: Configure keepalived
+  template:
+    src: keepalived.conf.j2
+    dest: /etc/keepalived/keepalived.conf
+    mode: "0644"
+  tags: install_keepalived
+  notify:
+  - restart keepalived
+
+- name: Start keepalived
+  service:
+    name: keepalived
+    state: started
+    enabled: yes
+  tags: install_keepalived

@@ -1,0 +1,127 @@
+---
+#this playbook is for k8smaster nodes.
+- name: Install kubeadm script
+  tags: k8s_master
+  template: src={{ item.src }} dest={{ item.dest }} mode={{ item.mode }}
+  when: role == "MASTER"
+  with_items:
+  - { 
+     src: "kubeadm-config.yaml.j2",
+     dest: "/home/{{k8s_install_user}}/kubeadm-config.yaml",
+     mode: "0644"
+    }
+  - { 
+     src: "kubeadm_install.sh.j2",
+     dest: "/home/{{k8s_install_user}}/kubeadm_install.sh",
+     mode: "0755"
+    }
+
+- name: Kubeadm init for k8s master leader node
+  shell: /home/{{k8s_install_user}}/kubeadm_install.sh /home/{{k8s_install_user}}/kubeadm-config.yaml
+  when: role == "MASTER"
+  tags: kubeadm_init
+
+- name: Fetch file from master leader node
+  fetch:
+    src: /etc/kubernetes/{{item}}
+    dest: roles/k8smaster/files/kubernetes/{{item}}
+    flat: yes
+  when: role == "MASTER"
+  with_items:
+  - "pki/ca.crt"
+  - "pki/ca.key"
+  - "pki/sa.key"
+  - "pki/sa.pub"
+  - "pki/front-proxy-ca.crt"
+  - "pki/front-proxy-ca.key"
+  - "pki/etcd/ca.crt"
+  - "pki/etcd/ca.key"
+  - "admin.conf"
+
+- name: Fetch master install result file from master leader node
+  fetch:
+    src: /tmp/.kubeadm_install_k8s.log
+    dest: roles/k8smaster/files/.kubeadm_install_k8s.log
+    flat: yes
+  when: role == "MASTER"
+
+- name: Create directory for k8s slave nodes
+  file:
+    path: /etc/kubernetes/pki/etcd
+    state: directory
+    mode: "0755"
+  tags: kubeadm_slave
+  when: role == "BACKUP"
+
+- name: Copy key to k8s slave nodes
+  copy:
+    src: kubernetes/{{item}}
+    dest: /etc/kubernetes/{{item}}
+  tags: kubeadm_slave
+  when: role == "BACKUP"
+  with_items:
+  - "pki/ca.crt"
+  - "pki/ca.key"
+  - "pki/sa.key"
+  - "pki/sa.pub"
+  - "pki/front-proxy-ca.crt"
+  - "pki/front-proxy-ca.key"
+  - "pki/etcd/ca.crt"
+  - "pki/etcd/ca.key"
+  - "admin.conf"
+
+- name: Copy master install result file to k8s slave nodes
+  copy:
+    src: .kubeadm_install_k8s.log
+    dest: /tmp/.kubeadm_install_k8s.log
+  tags: kubeadm_slave
+  when: role == "BACKUP"
+
+
+- name: Get slave master init scripts
+  shell: grep kubeadm -A 2 /tmp/.kubeadm_install_k8s.log |tail -6|head -3
+  register: kubeadm_scripts_result
+  tags: kubeadm_slave
+
+- name: Get work init scripts
+  shell: grep kubeadm -A 2 /tmp/.kubeadm_install_k8s.log |tail -2
+  register: kubeadm_scripts_node_result
+  tags: kubeadm_node
+  when: role == "MASTER"
+
+- name: Template kubeadm slave scripts to k8s slave node
+  template:
+    src: "kubeadm_install_slave.sh.j2"
+    dest: "/home/{{k8s_install_user}}/kubeadm_install_slave.sh"
+    mode: "0755"
+  tags: kubeadm_slave
+  when: role == "BACKUP"
+
+- name: Init manager config to k8s master node
+  script: kubeadm_manger_config.sh
+  tags: kubeadm_ops_config
+
+- name: Template kubeadm work scripts to k8s  node
+  template:
+    src: "kubeadm_install_node.sh.j2"
+    dest: "/tmp/.kubeadm_install_node.sh"
+    mode: "0755"
+  tags: kubeadm_node
+  when: role == "MASTER"
+
+- name: Get work init scripts
+  fetch:
+    src: /tmp/.kubeadm_install_node.sh
+    dest: roles/k8snode/files/kubeadm_install_node.sh
+    flat: yes
+  when: role == "MASTER"
+
+- name: Install k8s master slave
+  shell: /home/{{k8s_install_user}}/kubeadm_install_slave.sh
+  tags: kubeadm_slave
+  when: role == "BACKUP"
+
+- name: Install flanneld for k8s netowrk
+  shell: kubectl apply -f {{flanneld_yaml_url}}
+  tags: kubeadm_flanneld
+  when: role == "MASTER"

@@ -1,0 +1,48 @@
+---
+#this playbook is for k8s health check.
+
+#- name: Etcd client download
+#  geturl:
+#    url: https://github.com/etcd-io/etcd/releases/download/v3.4.14/etcd-v3.4.14-linux-amd64.tar.gz
+#    dest: /tmp/etcd-v3.4.14-linux-amd64.tar.gz
+#    mode: "0644"
+#  tags: etcd
+#  when: role == "MASTER"
+
+- name: Copy etcdctl to etcd server
+  copy:
+    src: etcdctl
+    dest: /usr/local/bin/etcdctl
+    mode: "0755"
+  tags: etcd
+
+- name: Check etcd endpoint health 
+  script: etcd_health_check.sh endpoint_check
+  register: endpoint_result
+  tags: etcd_health
+
+- name: Show etcd endpoint health
+  debug:
+    msg: "{{ endpoint_result.stdout_lines }}"
+  tags: etcd_health
+
+
+- name: Check etcd member list
+  script: etcd_health_check.sh member_check
+  register: member_list
+  tags: etcd_health
+
+- name: Show etcd member list
+  debug:
+    msg: "{{ member_list.stdout_lines }}"
+  tags: etcd_health
+
+- name: Check etcd endpoint status
+  script: etcd_health_check.sh endpoint_status
+  register: endpoint_status
+  tags: etcd_health
+
+- name: Show etcd endpoint_status
+  debug:
+    msg: "{{ endpoint_status.stdout_lines }}"
+  tags: etcd_health

@@ -1,0 +1,96 @@
+---
+# This playbook contains common plays that will be run on all nodes.
+
+- name: download docker repo
+  get_url:
+    url: https://download.docker.com/linux/centos/docker-ce.repo
+    dest: /etc/yum.repos.d/docker-ce.repo
+  tags: docker
+ 
+- name: Install docker ce
+  yum:
+    name: docker-ce
+    state: present
+  tags: docker
+
+- name: Create /etc/docker if not exist
+  shell: ls /etc/docker &>/dev/null || mkdir /etc/docker
+  tags: docker
+
+- name: Configure docker config
+  template: src=daemon.json.j2 dest=/etc/docker/daemon.json
+  tags: docker
+  notify:
+  - restart docker
+
+- name: Start the docker service
+  service: name=docker state=started enabled=yes
+  tags: docker
+
+- name: Stop  firewalld service
+  service: name=firewalld state=stopped enabled=no
+  tags: firewall
+
+#- name: Disable Selinux
+#  shell: setenforce 0 &> /dev/null && sed -i "s#SELINUX=enforcing#SELINUX=disabled#g" /etc/selinux/config
+#  ignore_errors: True
+#  tags: firewall
+#
+- name: Disable selinux
+  command: setenforce 0
+  ignore_errors: True
+  tags: selinux
+
+- name: Config selinux
+  template: src=config_selinux.j2 dest=/etc/selinux/config
+  tags: selinux
+
+- name: Off swap
+  shell: sed -i "s/^[^#]\(.*swap.*defaults.*\)$/#\1/g" /etc/fstab && swapoff  -a
+  tags: offswap
+
+- name: Install ntpdate
+  yum:
+    name: ntpdate
+    state: latest
+  tags: synctime
+
+- name: Sync time
+  shell: timedatectl set-timezone Asia/Shanghai  &&  ntpdate {{time_server}}
+  tags: synctime
+
+- name: Change kernel parameters
+  template: src=k8s.conf.j2 dest=/etc/sysctl.d/k8s.conf
+  tags: kernel_param
+
+- name: Apply kernel parameters
+  command: sysctl -p /etc/sysctl.d/k8s.conf
+  tags: kernel_param
+
+- name: Install k8s repo
+  template: 
+    src: kubernetes.repo.j2
+    dest: /etc/yum.repos.d/kubernetes.repo
+    mode: "0644"
+  tags: install_k8s
+
+- name: Install ipset service
+  yum:
+    name: 
+    - ipvsadm
+    - ipset
+    - sysstat
+    - conntrack
+    - libseccomp
+  tags: install_k8s
+
+- name: Install relate module
+  template: 
+    src: ipvs.modules.j2
+    dest: /etc/sysconfig/modules/ipvs.modules
+    mode: "0755"
+  tags: install_k8s
+
+- name: Apply relate module
+  command: /etc/sysconfig/modules/ipvs.modules
+  tags: install_k8s

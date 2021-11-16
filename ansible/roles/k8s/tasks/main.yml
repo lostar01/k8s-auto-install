@@ -1,0 +1,34 @@
+---
+#this playbook is for k8s nodes.
+
+- name: Reset k8s cluster
+  shell: kubeadm reset --force
+  tags: k8s
+  when: kubeadm_reset
+
+- name: Remove kubeadm,kubelet,kubectl
+  yum:
+    name:
+    - kubeadm
+    - kubelet
+    - kubectl
+    state: absent
+  tags: k8s
+  when: k8s_reinstall
+
+- name: Install kubeadm,kubelet,kubectl
+  yum:
+    name:
+    - kubeadm-{{k8s_version}}
+    - kubelet-{{k8s_version}}
+    - kubectl-{{k8s_version}}
+    state: present
+  tags: k8s
+
+- name: Start kubelet
+  systemd:
+    name: kubelet
+    daemon_reload: yes
+    enabled: yes
+    state: started
+  tags: k8s

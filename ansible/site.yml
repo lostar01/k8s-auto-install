@@ -1,0 +1,47 @@
+---
+# This playbook deploys the whole application stack in this site.
+
+- name: apply common configuration to all nodes
+  hosts: all
+  remote_user: k8s
+  become: yes
+
+  roles:
+    - common
+
+- name: apply haproxy configuration to haproxy nodes
+  hosts: haproxy
+  remote_user: k8s
+  become: yes
+
+  roles:
+  - haproxy
+
+- name: apply keepalived configuration to keepalived nodes
+  hosts: keepalived
+  remote_user: k8s
+  become: yes
+
+  roles:
+  - keepalived
+
+- name: apply k8s configuration to k8s nodes
+  hosts: k8s
+  become: yes
+
+  roles:
+  - role: k8s
+
+- name: apply k8s configuration to k8smaster nodes
+  hosts: master
+  become: yes
+
+  roles:
+  - role: k8smaster
+
+- name: apply k8s configuration to k8snode nodes
+  hosts: node
+  become: yes
+
+  roles:
+  - k8snode

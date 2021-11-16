@@ -1,0 +1,6 @@
+192.168.147.130 master1 root root123
+192.168.147.131 master2 root root123
+192.168.147.132 master3 root root123
+192.168.147.133 node1 root root123
+192.168.147.134 node2 root root123
+192.168.147.135 node3 root root123

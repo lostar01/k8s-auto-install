@@ -1,0 +1,8 @@
+#!/bin/bash
+#####################
+# init slave master
+install_log=/tmp/kubeadm_master_slave.log
+
+if [ `ls /etc/kubernetes/scheduler.conf &>/dev/null; echo $?` -ne 0 ];then
+    {{kubeadm_scripts_result.stdout}}  &> $install_log
+fi

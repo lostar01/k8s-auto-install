@@ -1,0 +1,10 @@
+---
+#
+
+- name: health_check configuration to k8s cluster
+  hosts: master
+  become: yes
+
+  roles:
+  - role: health_check
+

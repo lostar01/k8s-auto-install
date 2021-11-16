@@ -1,0 +1,47 @@
+apiVersion: kubeadm.k8s.io/v1beta2
+bootstrapTokens:
+- groups:
+  - system:bootstrappers:kubeadm:default-node-token
+  token: abcdef.0123456789abcdef
+  ttl: 24h0m0s
+  usages:
+  - signing
+  - authentication
+kind: InitConfiguration
+localAPIEndpoint:
+  advertiseAddress: "{{hostvars[inventory_hostname]['ansible_default_ipv4']['address']}}"
+  bindPort: 6443
+nodeRegistration:
+  criSocket: /var/run/dockershim.sock
+  name: master1
+  taints:
+  - effect: NoSchedule
+    key: node-role.kubernetes.io/master
+---
+apiServer:
+  timeoutForControlPlane: 4m0s
+apiVersion: kubeadm.k8s.io/v1beta2
+certificatesDir: /etc/kubernetes/pki
+clusterName: kubernetes
+controlPlaneEndpoint: "{{keepalived_vip}}:16443"
+controllerManager: {}
+dns:
+  type: CoreDNS
+etcd:
+  local:
+    dataDir: /var/lib/etcd
+imageRepository: gotok8s
+kind: ClusterConfiguration
+kubernetesVersion: 1.21.0
+networking:
+  dnsDomain: cluster.local
+  podSubnet: "{{k8s_podSubnet}}"
+  serviceSubnet: "{{k8s_serviceSubnet}}"
+scheduler: {}
+
+---
+apiVersion: kubeproxy.config.k8s.io/v1alpha1
+kind: KubeProxyConfiguration
+featureGates:
+  SupportIPVSProxyMode: true
+mode: ipvs

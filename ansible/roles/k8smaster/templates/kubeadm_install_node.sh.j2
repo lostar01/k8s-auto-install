@@ -1,0 +1,7 @@
+#!/bin/bash
+#####################
+# init k8s node
+install_log=/tmp/kubeadm_install_node.log
+if [ `ls /etc/kubernetes/kubelet.conf &>/dev/null;echo $?` -ne 0 ];then
+    {{kubeadm_scripts_node_result.stdout}}  &> $install_log
+fi

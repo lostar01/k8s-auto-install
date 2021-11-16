@@ -1,0 +1,19 @@
+#!/bin/sh
+# Check haproxy healthy
+
+function get_stats(){
+  status=`curl -s -I {{health_check_url}}|grep {{health_flag}}|wc -l`
+  echo $status
+}
+
+if [ `get_stats` -eq 0 ];then
+  systemctl restart haproxy
+  sleep 1
+  if [ `get_stats` -eq 0 ];then
+    ps -ef|grep haproxy-systemd-wrapper|grep -v grep|awk '{print $2}'|xargs kill -9
+    
+    echo "HAPROXY down"
+    exit 10
+  fi 
+
+fi

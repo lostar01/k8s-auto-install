@@ -1,0 +1,25 @@
+#!/bin/bash
+# kubeadm init k8s master
+
+if [ $# -ne 1 ];then
+  echo "$0 config_path"
+  exit 2
+fi
+
+config_path=$1
+install_log=/tmp/.kubeadm_install_k8s.log
+kubeadm_action={{kubeadm_action}}
+
+if [ "install" == $kubeadm_action ];then
+  kubeadm_status=`ls /etc/kubernetes/pki/ca.crt &>/dev/null;echo $?`
+  if [ $kubeadm_status -ne 0 ];then
+      kubeadm config images pull --config $config_path &> $install_log
+      kubeadm init --config $config_path &>> $install_log
+  else
+     echo "kubeadm already installed."
+  fi
+elif [ "uninstall" == $kubeadm_action ];then
+  kubeadm reset
+else
+  echo "kubeadm_action paramer not correct."
+fi
