@@ -14,6 +14,12 @@
   notify:
   - reload haproxy
 
+- name: Create keepalived directory if it does not exist
+  ansible.builtin.file:
+    path: /etc/keepalived
+    state: directory
+    mode: '0755'
+
 - name: Configure check haproxy script
   template:
     src: check_haproxy.sh.j2

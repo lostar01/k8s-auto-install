@@ -1,4 +1,4 @@
-W1116 11:29:05.635069  119675 strict.go:54] error unmarshaling configuration schema.GroupVersionKind{Group:"kubeadm.k8s.io", Version:"v1beta2", Kind:"ClusterConfiguration"}: error unmarshaling JSON: while decoding JSON: json: unknown field "certSANs"
+W0311 21:04:56.280234   17734 strict.go:54] error unmarshaling configuration schema.GroupVersionKind{Group:"kubeadm.k8s.io", Version:"v1beta2", Kind:"ClusterConfiguration"}: error unmarshaling JSON: while decoding JSON: json: unknown field "certSANs"
 [config/images] Pulled gotok8s/kube-apiserver:v1.21.0
 [config/images] Pulled gotok8s/kube-controller-manager:v1.21.0
 [config/images] Pulled gotok8s/kube-scheduler:v1.21.0
@@ -6,7 +6,7 @@ W1116 11:29:05.635069  119675 strict.go:54] error unmarshaling configuration sch
 [config/images] Pulled gotok8s/pause:3.4.1
 [config/images] Pulled gotok8s/etcd:3.4.13-0
 [config/images] Pulled gotok8s/coredns:v1.8.0
-W1116 11:29:30.938858  119881 strict.go:54] error unmarshaling configuration schema.GroupVersionKind{Group:"kubeadm.k8s.io", Version:"v1beta2", Kind:"ClusterConfiguration"}: error unmarshaling JSON: while decoding JSON: json: unknown field "certSANs"
+W0311 21:05:19.983484   17938 strict.go:54] error unmarshaling configuration schema.GroupVersionKind{Group:"kubeadm.k8s.io", Version:"v1beta2", Kind:"ClusterConfiguration"}: error unmarshaling JSON: while decoding JSON: json: unknown field "certSANs"
 [init] Using Kubernetes version: v1.21.0
 [preflight] Running pre-flight checks
 [preflight] Pulling images required for setting up a Kubernetes cluster
@@ -45,7 +45,7 @@ W1116 11:29:30.938858  119881 strict.go:54] error unmarshaling configuration sch
 [control-plane] Creating static Pod manifest for "kube-scheduler"
 [etcd] Creating static Pod manifest for local etcd in "/etc/kubernetes/manifests"
 [wait-control-plane] Waiting for the kubelet to boot up the control plane as static Pods from directory "/etc/kubernetes/manifests". This can take up to 4m0s
-[apiclient] All control plane components are healthy after 11.234630 seconds
+[apiclient] All control plane components are healthy after 11.103972 seconds
 [upload-config] Storing the configuration used in ConfigMap "kubeadm-config" in the "kube-system" Namespace
 [kubelet] Creating a ConfigMap "kubelet-config-1.21" in namespace kube-system with the configuration for the kubelets in the cluster
 [upload-certs] Skipping phase. Please see --upload-certs
@@ -83,10 +83,10 @@ You can now join any number of control-plane nodes by copying certificate author
 and service account keys on each node and then running the following as root:
 
   kubeadm join 192.168.147.139:16443 --token abcdef.0123456789abcdef \
-	--discovery-token-ca-cert-hash sha256:fbb7630ff1cd017e485cad0869fe0f28d4eef447f30449fa1a08732752ec4f81 \
+	--discovery-token-ca-cert-hash sha256:b72731bd3a76a3e741c7a7d4c795bb36a18b28e615e7297bd90c2418c0a9cfe7 \
 	--control-plane 
 
 Then you can join any number of worker nodes by running the following on each as root:
 
 kubeadm join 192.168.147.139:16443 --token abcdef.0123456789abcdef \
-	--discovery-token-ca-cert-hash sha256:fbb7630ff1cd017e485cad0869fe0f28d4eef447f30449fa1a08732752ec4f81 
+	--discovery-token-ca-cert-hash sha256:b72731bd3a76a3e741c7a7d4c795bb36a18b28e615e7297bd90c2418c0a9cfe7 

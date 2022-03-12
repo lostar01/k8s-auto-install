@@ -3,6 +3,7 @@
 
 - name: Reset k8s cluster
   shell: kubeadm reset --force
+  ignore_errors: True
   tags: k8s
   when: kubeadm_reset
 
